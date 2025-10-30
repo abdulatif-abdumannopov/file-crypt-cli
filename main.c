@@ -3,7 +3,11 @@
 #include <openssl/rand.h>
 #include <openssl/aes.h>
 #include <stdio.h>
-#include <unistd.h>
+#ifdef _WIN32
+    #include "getopt.h"
+#else
+    #include <unistd.h>
+#endif
 #include <string.h>
 
 unsigned char* read_file(const char *filename, size_t *len) {

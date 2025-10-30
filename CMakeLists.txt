@@ -5,6 +5,8 @@ set(CMAKE_C_STANDARD 17)
 
 find_package(OpenSSL REQUIRED)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
 if (WIN32)
     add_executable(crypto_tool main.c getopt.c)
 else()
@@ -12,4 +14,5 @@ else()
 endif()
 
 target_link_libraries(crypto_tool OpenSSL::Crypto)
+
 
