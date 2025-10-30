@@ -1,0 +1,72 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install OpenSSL
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y libssl-dev
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            brew install openssl
+          else
+            choco install openssl.light -y
+          fi
+        shell: bash
+
+      - name: Configure CMake
+        run: cmake -B build -S .
+        shell: bash
+
+      - name: Build project
+        run: cmake --build build
+        shell: bash
+
+      - name: Prepare binary for upload
+        run: |
+          mkdir artifacts
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            cp build/crypto_tool artifacts/crypto_tool-linux
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            cp build/crypto_tool artifacts/crypto_tool-macos
+          else
+            cp build/Release/crypto_tool.exe artifacts/crypto_tool-windows.exe
+          fi
+        shell: bash
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}
+          path: artifacts/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release_binaries/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release_binaries/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
