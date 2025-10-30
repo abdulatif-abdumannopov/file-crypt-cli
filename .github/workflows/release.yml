@@ -25,16 +25,7 @@ jobs:
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             brew install openssl
           else
-            choco install openssl.light -y
-          fi
-        shell: bash
-
-      - name: Show OpenSSL version
-        run: |
-          if [[ "$RUNNER_OS" == "Linux" || "$RUNNER_OS" == "macOS" ]]; then
-            openssl version
-          else
-            "C:\Program Files\OpenSSL-Win64\bin\openssl.exe" version
+            choco install openssl -y
           fi
         shell: bash
 
@@ -51,31 +42,23 @@ jobs:
         run: cmake --build build --config Release
         shell: bash
 
-      - name: Prepare binary for upload
+      - name: Prepare artifacts
         run: |
           mkdir artifacts
-          if [[ "$RUNNER_OS" == "Linux" ]]; then
-            cp build/crypto_tool artifacts/crypto_tool-linux
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            cp build/crypto_tool artifacts/crypto_tool-macos
-          else
-            if [ -f build/Release/crypto_tool.exe ]; then
-              cp build/Release/crypto_tool.exe artifacts/crypto_tool-windows.exe
-            elif [ -f build/Debug/crypto_tool.exe ]; then
-              cp build/Debug/crypto_tool.exe artifacts/crypto_tool-windows.exe
-            else
-              echo "❌ Could not find compiled binary"
-              ls -R build
-              exit 1
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            if [ -f build/Release/file_crypt_cli.exe ]; then
+              cp build/Release/file_crypt_cli.exe artifacts/file_crypt_cli-windows.exe
+            elif [ -f build/Debug/file_crypt_cli.exe ]; then
+              cp build/Debug/file_crypt_cli.exe artifacts/file_crypt_cli-windows.exe
             fi
+          elif [[ "$RUNNER_OS" == "Linux" ]]; then
+            cp build/file_crypt_cli artifacts/file_crypt_cli-linux
+          else
+            cp build/file_crypt_cli artifacts/file_crypt_cli-macos
           fi
         shell: bash
 
-      - name: List built files
-        run: ls -R artifacts
-        shell: bash
-
-      - name: Upload build artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}
@@ -85,14 +68,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download all build artifacts
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           path: release_binaries/
-
-      - name: List release binaries
-        run: ls -R release_binaries
-        shell: bash
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -106,8 +85,6 @@ jobs:
             - 🐧 Linux
             - 🍎 macOS
             - 🪟 Windows
-
-            Built automatically via GitHub Actions.
           files: release_binaries/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

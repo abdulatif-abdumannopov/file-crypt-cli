@@ -1,18 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
-project(crypto_tool C)
+project(file_crypt_cli C)
 
 set(CMAKE_C_STANDARD 17)
 
 find_package(OpenSSL REQUIRED)
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 if (WIN32)
-    add_executable(crypto_tool main.c getopt.c)
+    add_executable(file_crypt_cli main.c getopt.c)
 else()
-    add_executable(crypto_tool main.c)
+    add_executable(file_crypt_cli main.c)
 endif()
 
-target_link_libraries(crypto_tool OpenSSL::Crypto)
-
-
+target_link_libraries(file_crypt_cli OpenSSL::Crypto)
