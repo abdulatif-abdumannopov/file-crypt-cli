@@ -1,0 +1,38 @@
+name: Build on Linux, Windows, and macOS
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenSSL
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y libssl-dev
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            brew install openssl
+          else
+            choco install openssl.light -y
+          fi
+        shell: bash
+
+      - name: Configure project
+        run: cmake -B build -S .
+        shell: bash
+
+      - name: Build
+        run: cmake --build build
+        shell: bash
