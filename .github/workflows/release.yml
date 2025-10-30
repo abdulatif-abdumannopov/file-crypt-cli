@@ -82,9 +82,9 @@ jobs:
             ✅ Automatic build for ${{ github.ref_name }}
 
             Includes binaries for:
-            - 🐧 Linux
-            - 🍎 macOS
-            - 🪟 Windows
+            - Linux
+            - macOS
+            - Windows
           files: release_binaries/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
