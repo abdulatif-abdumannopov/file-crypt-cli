@@ -1,7 +1,7 @@
-#include <openssl/evp.h>    // Основной интерфейс для шифрования
-#include <openssl/sha.h>    // Для SHA-256, SHA-512
-#include <openssl/rand.h>   // Для генерации случайных IV/ключей
-#include <openssl/aes.h>    // Для прямого использования AES (по желанию)
+#include <openssl/evp.h>
+#include <openssl/sha.h>
+#include <openssl/rand.h>
+#include <openssl/aes.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -107,25 +107,24 @@ int main(int argc, char *argv[]) {
             case 'o': output = optarg; break;
             case 'p': password = optarg; break;
             default:
-                fprintf(stderr, "Использование: %s [-e|-d|-h] -f input -o output -p password\n", argv[0]);
+                fprintf(stderr, "use: %s [-e][-d][-h] -f file_path -o output filename", argv[0]);
                 return 1;
         }
     }
 
     if (mode == 0 || !input || (mode != 3 && !output) || (mode != 3 && !password)) {
-        fprintf(stderr, "Ошибка: неверные аргументы\n");
+        fprintf(stderr, "Not right arguments\n");
         return 1;
     }
 
     size_t len;
     unsigned char *data = read_file(input, &len);
     if (!data) {
-        fprintf(stderr, "Не удалось открыть файл %s\n", input);
+        fprintf(stderr, "couldn't open the file %s\n", input);
         return 1;
     }
 
     if (mode == 1) {
-        // --- Шифрование ---
         unsigned char key[32], iv[12], tag[16];
         derive_key_iv(password, key, iv);
 
@@ -137,13 +136,12 @@ int main(int argc, char *argv[]) {
         fwrite(tag, 1, 16, fout);
         fclose(fout);
 
-        printf("Файл зашифрован: %s\n", output);
+        printf("File encrypted: %s\n", output);
         free(ciphertext);
 
     } else if (mode == 2) {
-        // --- Расшифровка ---
         if (len < 16) {
-            fprintf(stderr, "Файл слишком короткий\n");
+            fprintf(stderr, "File's too short\n");
             free(data);
             return 1;
         }
@@ -159,7 +157,7 @@ int main(int argc, char *argv[]) {
         int pt_len = decrypt_aes_gcm(ciphertext, ciphertext_len, key, iv, tag, plaintext);
 
         if (pt_len < 0) {
-            fprintf(stderr, "Ошибка расшифровки (неверный пароль или повреждённый файл)\n");
+            fprintf(stderr, "Decryption error (wrong password or broken file)\n");
             free(data);
             free(plaintext);
             return 1;
@@ -169,7 +167,7 @@ int main(int argc, char *argv[]) {
         fwrite(plaintext, 1, pt_len, fout);
         fclose(fout);
 
-        printf("Файл расшифрован: %s\n", output);
+        printf("Encrypted file: %s\n", output);
         free(plaintext);
 
     } else if (mode == 3) {
