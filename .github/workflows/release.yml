@@ -25,21 +25,38 @@ jobs:
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             brew install openssl
           else
-            choco install openssl.light -y
+            choco install openssl -y
           fi
         shell: bash
 
       - name: Configure CMake
         run: |
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            OPENSSL_ROOT="C:/Program Files/OpenSSL-Win64"
-            cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DOPENSSL_USE_STATIC_LIBS=TRUE -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" -DOPENSSL_INCLUDE_DIR="$OPENSSL_ROOT/include" -DOPENSSL_CRYPTO_LIBRARY="$OPENSSL_ROOT/lib/libcrypto.lib" -DOPENSSL_SSL_LIBRARY="$OPENSSL_ROOT/lib/libssl.lib"
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+          if ($env:RUNNER_OS -eq "Windows") {
+            $OPENSSL_ROOT = "C:/Program Files/OpenSSL-Win64"
+            Write-Host "Using OpenSSL from: $OPENSSL_ROOT"
+
+            if (!(Test-Path "$OPENSSL_ROOT/lib/libcrypto.lib")) {
+              Write-Host "⚠ OpenSSL .lib not found in $OPENSSL_ROOT/lib, checking alternative path..."
+              $OPENSSL_ROOT = "C:/Program Files/OpenSSL-Win64/lib/VC"
+            }
+
+            cmake -B build -S . `
+              -G "Visual Studio 17 2022" `
+              -A x64 `
+              -DCMAKE_BUILD_TYPE=Release `
+              -DOPENSSL_USE_STATIC_LIBS=TRUE `
+              -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" `
+              -DOPENSSL_INCLUDE_DIR="$OPENSSL_ROOT/include" `
+              -DOPENSSL_CRYPTO_LIBRARY="$OPENSSL_ROOT/lib/libcrypto.lib" `
+              -DOPENSSL_SSL_LIBRARY="$OPENSSL_ROOT/lib/libssl.lib"
+          }
+          elseif ($env:RUNNER_OS -eq "macOS") {
             cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DOPENSSL_ROOT_DIR=$(brew --prefix openssl)
-          else
+          }
+          else {
             cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
-          fi
-        shell: bash
+          }
+        shell: pwsh
 
       - name: Build project
         run: cmake --build build --config Release
@@ -54,7 +71,10 @@ jobs:
             elif [ -f build/Debug/file_crypt_cli.exe ]; then
               cp build/Debug/file_crypt_cli.exe artifacts/file_crypt_cli-windows.exe
             fi
-            dumpbin /dependents artifacts/file_crypt_cli-windows.exe || true
+
+            echo "🔍 Checking dependencies..."
+            "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/*/bin/Hostx64/x64/dumpbin.exe" /dependents artifacts/file_crypt_cli-windows.exe || true
+
           elif [[ "$RUNNER_OS" == "Linux" ]]; then
             cp build/file_crypt_cli artifacts/file_crypt_cli-linux
           else
@@ -86,9 +106,9 @@ jobs:
             ✅ Automatic build for ${{ github.ref_name }}
 
             Includes binaries for:
-            - Linux (x86_64)
-            - macOS (ARM64 Apple Silicon)
-            - Windows (x86_64 static build)
+            -  Linux (x86_64)
+            -  macOS (ARM64 Apple Silicon)
+            -  Windows (x86_64, statically linked OpenSSL)
           files: release_binaries/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
