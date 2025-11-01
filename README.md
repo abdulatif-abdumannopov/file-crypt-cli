@@ -77,3 +77,7 @@ Data breaches, accidental leaks, and file tampering are everyday threats. `File 
 **Integrate encryption into automated pipelines without heavy libraries**
 
 It is perfect for coursework, research projects, and real-world applications where strong, authenticated encryption is needed.
+
+# Licence
+
+<a href="https://github.com/abdulatif-abdumannopov/file-crypt-cli">File Crypt CLI</a> © 2025 by <a href="https://github.com/abdulatif-abdumannopov">Abdumannopov Abdulatif</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>>
