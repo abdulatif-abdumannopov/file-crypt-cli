@@ -5,7 +5,6 @@
 
 This license allows anyone to **copy, redistribute, remix, adapt, and build upon this work** in any medium or format, **but only for non-commercial purposes**, and **requires giving proper credit to the creator**.
 
-### Key Terms
 
 **BY (Attribution)**  
 Credit must be given to **Abdumannopov Abdulatif**, the creator of this project.  
