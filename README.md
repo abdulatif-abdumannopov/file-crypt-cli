@@ -80,4 +80,4 @@ It is perfect for coursework, research projects, and real-world applications whe
 
 # Licence
 
-<a href="https://github.com/abdulatif-abdumannopov/file-crypt-cli">File Crypt CLI</a> © 2025 by <a href="https://github.com/abdulatif-abdumannopov">Abdumannopov Abdulatif</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0</a>
+<a href="https://github.com/abdulatif-abdumannopov/file-crypt-cli">File Crypt CLI</a> © 2025 by <a href="https://github.com/abdulatif-abdumannopov">Abdumannopov Abdulatif</a> is licensed under <a href="https://github.com/abdulatif-abdumannopov/file-crypt-cli?tab=License-1-ov-file">NCL 1.0</a>
